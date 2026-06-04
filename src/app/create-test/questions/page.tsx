@@ -3,8 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Pencil, Clock, HelpCircle, FileText, Plus, Trash2, ChevronLeft, ChevronRight, Bold, Italic, Underline, List, ListOrdered, Link as LinkIcon, Image as ImageIcon, ChevronDown } from 'lucide-react';
+import { Pencil, Clock, HelpCircle, FileText, Plus, Trash2, ChevronLeft, ChevronRight, Upload, PlayCircle } from 'lucide-react';
 import { api } from '@/services/api';
+import { RichTextEditor } from '@/components/ui/RichTextEditor';
+import { TestPreviewModal } from '@/components/ui/TestPreviewModal';
 
 export default function AddQuestionsPage() {
   const searchParams = useSearchParams();
@@ -32,6 +34,7 @@ export default function AddQuestionsPage() {
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   // Fetch test details to display in header
   useEffect(() => {
@@ -156,6 +159,53 @@ export default function AddQuestionsPage() {
     setCurrentQIndex(index);
   };
 
+  const handleCSVUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const text = event.target?.result as string;
+        // Basic CSV parse (assuming comma separated, no escaped commas inside quotes for simplicity)
+        const lines = text.split('\n').filter(line => line.trim().length > 0);
+        
+        // Skip header line (assuming first line is headers)
+        const dataLines = lines.slice(1);
+        
+        const newQuestions = dataLines.map(line => {
+          // Splitting by comma - note: this is a very basic parser.
+          const [question, option1, option2, option3, option4, correctOption, explanation] = line.split(',').map(s => s.trim());
+          
+          return {
+            question: question || 'Untitled Question',
+            option1: option1 || 'Option 1',
+            option2: option2 || 'Option 2',
+            option3: option3 || 'Option 3',
+            option4: option4 || 'Option 4',
+            correct_option: `option${correctOption || '1'}`,
+            explanation: explanation || '',
+            difficulty: 'medium',
+            type: 'single_correct',
+            test_id: testId,
+            subject: testDetails?.subject?.id || testDetails?.subject || 'Unknown',
+            topic: testDetails?.topics?.[0]?.id || testDetails?.topics?.[0] || 'Unknown',
+            sub_topic: testDetails?.sub_topics?.[0]?.id || testDetails?.sub_topics?.[0] || 'Unknown'
+          };
+        });
+
+        setQuestionsList(prev => [...prev, ...newQuestions]);
+        alert(`Successfully imported ${newQuestions.length} questions from CSV!`);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to parse CSV file. Ensure it has the correct format.");
+      }
+    };
+    reader.readAsText(file);
+    // Clear input
+    e.target.value = '';
+  };
+
   const handleNextSubmit = async () => {
     if (!testId) {
       setError("No Test ID found. Cannot create questions.");
@@ -188,6 +238,12 @@ export default function AddQuestionsPage() {
           <span className="mx-2">/</span>
           <span className="text-[var(--color-text-primary)] font-medium">Add Questions</span>
         </div>
+        
+        <label className="flex items-center gap-2 px-4 py-2 bg-[var(--color-surface)] border border-[var(--color-border-light)] hover:bg-[var(--color-surface-hover)] text-[var(--color-text-primary)] text-sm font-medium rounded-md cursor-pointer transition-colors shadow-sm">
+          <Upload className="w-4 h-4" />
+          Upload CSV
+          <input type="file" accept=".csv" className="hidden" onChange={handleCSVUpload} />
+        </label>
       </div>
 
       {/* Test Summary Card */}
@@ -238,26 +294,12 @@ export default function AddQuestionsPage() {
       </div>
 
       {/* Editor */}
-      <div className="border border-[var(--color-border-light)] rounded-lg overflow-hidden mb-8 bg-[var(--color-surface)]">
-        <div className="flex items-center gap-3 p-2 border-b border-[var(--color-border-light)] bg-[var(--color-surface-hover)] text-[var(--color-text-muted)]">
-          <Bold className="w-4 h-4 cursor-pointer hover:text-[var(--color-text-primary)]" />
-          <Italic className="w-4 h-4 cursor-pointer hover:text-[var(--color-text-primary)]" />
-          <Underline className="w-4 h-4 cursor-pointer hover:text-[var(--color-text-primary)]" />
-          <div className="w-px h-4 bg-gray-300 mx-1"></div>
-          <LinkIcon className="w-4 h-4 cursor-pointer hover:text-[var(--color-text-primary)]" />
-          <div className="w-px h-4 bg-gray-300 mx-1"></div>
-          <List className="w-4 h-4 cursor-pointer hover:text-[var(--color-text-primary)]" />
-          <ListOrdered className="w-4 h-4 cursor-pointer hover:text-[var(--color-text-primary)]" />
-          <ImageIcon className="w-4 h-4 cursor-pointer hover:text-[var(--color-text-primary)]" />
-        </div>
-        <div className="relative">
-          <textarea 
-            value={questionText}
-            onChange={(e) => setQuestionText(e.target.value)}
-            className="w-full h-32 p-4 text-sm focus:outline-none resize-none placeholder-gray-400 bg-transparent text-[var(--color-text-primary)]"
-            placeholder="Type question here"
-          ></textarea>
-        </div>
+      <div className="mb-8">
+        <RichTextEditor 
+          value={questionText}
+          onChange={setQuestionText}
+          placeholder="Type your question here..."
+        />
       </div>
 
       {/* Options */}
@@ -295,13 +337,12 @@ export default function AddQuestionsPage() {
       <div className="mb-8">
         <h4 className="text-sm font-semibold text-[var(--color-text-primary)] mb-4">Add Solution (Optional)</h4>
         <div className="space-y-4 mb-4">
-          <div className="relative border border-[var(--color-border-light)] rounded-md overflow-hidden bg-[var(--color-surface)]">
-            <textarea 
+          <div className="mb-4">
+            <RichTextEditor 
               value={solution}
-              onChange={(e) => setSolution(e.target.value)}
-              className="w-full h-24 p-4 text-sm focus:outline-none resize-none placeholder-gray-400 bg-transparent text-[var(--color-text-primary)]"
-              placeholder="Type explanation here"
-            ></textarea>
+              onChange={setSolution}
+              placeholder="Type explanation here..."
+            />
           </div>
         </div>
       </div>
@@ -332,16 +373,31 @@ export default function AddQuestionsPage() {
       </div>
 
       {/* Footer Buttons */}
-      <div className="flex justify-between border-t border-[var(--color-border-light)] pt-6 mt-6 pb-20">
-        <Link href="/create-test">
+      <div className="flex justify-between items-center border-t border-[var(--color-border-light)] pt-6 mt-6 pb-20">
+        <Link href={`/create-test?testId=${testId}`}>
           <button className="px-6 py-2.5 rounded-md text-[var(--color-text-primary)] bg-[var(--color-surface-hover)] border border-[var(--color-border-light)] font-medium text-sm transition-colors hover:bg-[var(--color-border-light)]">
             Back
           </button>
         </Link>
-        <button onClick={handleNextSubmit} disabled={loading} className="px-10 py-2.5 rounded-md text-white bg-[#6b8cff] hover:bg-blue-600 disabled:bg-blue-400 font-medium text-sm transition-colors shadow-sm">
-          {loading ? 'Submitting...' : 'Submit & Next'}
-        </button>
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => setIsPreviewOpen(true)}
+            className="flex items-center gap-2 px-6 py-2.5 rounded-md text-[var(--color-brand-primary)] bg-transparent border border-[var(--color-brand-light)] hover:bg-blue-50 dark:hover:bg-blue-900/20 font-medium text-sm transition-colors shadow-sm"
+          >
+            <PlayCircle className="w-4 h-4" /> Preview Test
+          </button>
+          <button onClick={handleNextSubmit} disabled={loading} className="px-10 py-2.5 rounded-md text-white bg-[#6b8cff] hover:bg-blue-600 disabled:bg-blue-400 font-medium text-sm transition-colors shadow-sm">
+            {loading ? 'Submitting...' : 'Submit & Next'}
+          </button>
+        </div>
       </div>
+
+      <TestPreviewModal 
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        questions={questionsList}
+        testName={testDetails?.name || 'Untitled Test'}
+      />
     </div>
   );
 }

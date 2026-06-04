@@ -62,7 +62,7 @@ export default function AddQuestionsPage() {
       </div>
 
       {/* Test Summary Card */}
-      <div className="border border-[var(--color-border-light)] rounded-lg p-6 mb-8 bg-white relative">
+      <div className="border border-[var(--color-border-light)] rounded-lg p-6 mb-8 bg-[var(--color-surface)] relative">
         <div className="flex justify-between items-start mb-4">
           <div className="flex items-center gap-3">
             <span className="bg-[#1f2937] text-white text-xs font-semibold px-3 py-1 rounded-full">Chapter Wise</span>
@@ -112,10 +112,10 @@ export default function AddQuestionsPage() {
       <div className="mb-6 flex justify-between items-center">
         <h3 className="font-semibold text-[var(--color-text-primary)]">Question 4<span className="text-[var(--color-brand-secondary)] font-normal">/50</span></h3>
         <div className="flex gap-2">
-          <button className="flex items-center gap-1.5 px-3 py-1.5 border border-[var(--color-border-light)] rounded text-xs font-medium text-[var(--color-text-secondary)] hover:bg-gray-50">
+          <button className="flex items-center gap-1.5 px-3 py-1.5 border border-[var(--color-border-light)] rounded text-xs font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)]">
             <Plus className="w-3.5 h-3.5" /> MCQ
           </button>
-          <button className="flex items-center gap-1.5 px-3 py-1.5 border border-[var(--color-border-light)] rounded text-xs font-medium text-[var(--color-text-secondary)] hover:bg-gray-50">
+          <button className="flex items-center gap-1.5 px-3 py-1.5 border border-[var(--color-border-light)] rounded text-xs font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)]">
             <Plus className="w-3.5 h-3.5" /> CSV
           </button>
         </div>
@@ -126,8 +126,8 @@ export default function AddQuestionsPage() {
       </button>
 
       {/* Rich Text Editor Placeholder */}
-      <div className="border border-[var(--color-border-light)] rounded-md mb-8 overflow-hidden bg-white">
-        <div className="flex items-center gap-3 p-2 border-b border-[var(--color-border-light)] bg-gray-50 text-[var(--color-text-muted)]">
+      <div className="border border-[var(--color-border-light)] rounded-md mb-8 overflow-hidden bg-[var(--color-surface)]">
+        <div className="flex items-center gap-3 p-2 border-b border-[var(--color-border-light)] bg-[var(--color-surface-hover)] text-[var(--color-text-muted)]">
           <Bold className="w-4 h-4 cursor-pointer hover:text-gray-700" />
           <Italic className="w-4 h-4 cursor-pointer hover:text-gray-700" />
           <Underline className="w-4 h-4 cursor-pointer hover:text-gray-700" />
@@ -163,7 +163,7 @@ export default function AddQuestionsPage() {
                   onChange={() => setCorrectOptionId(opt.id)}
                 />
               </label>
-              <div className="flex-1 relative border border-[var(--color-border-light)] rounded-md overflow-hidden bg-white">
+              <div className="flex-1 relative border border-[var(--color-border-light)] rounded-md overflow-hidden bg-[var(--color-surface)]">
                 <input 
                   type="text" 
                   placeholder="Type Option here" 
@@ -192,7 +192,7 @@ export default function AddQuestionsPage() {
         <h4 className="text-sm font-semibold text-[var(--color-text-primary)] mb-4">Add Solution</h4>
         <div className="space-y-4 mb-4">
           {solutions.map((sol) => (
-            <div key={sol.id} className="relative border border-[var(--color-border-light)] rounded-md overflow-hidden bg-white">
+            <div key={sol.id} className="relative border border-[var(--color-border-light)] rounded-md overflow-hidden bg-[var(--color-surface)]">
               <textarea 
                 value={sol.text}
                 onChange={(e) => handleSolutionChange(sol.id, e.target.value)}
@@ -279,3 +279,4 @@ export default function AddQuestionsPage() {
     </div>
   );
 }
+

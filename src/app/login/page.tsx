@@ -3,8 +3,8 @@ import Link from 'next/link';
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen bg-gray-50 items-center justify-center p-4">
-      <div className="flex w-full max-w-5xl h-[600px] bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+    <div className="flex min-h-screen bg-[var(--color-surface-hover)] items-center justify-center p-4">
+      <div className="flex w-full max-w-5xl h-[600px] bg-[var(--color-surface)] rounded-lg shadow-sm border border-gray-100 overflow-hidden">
         {/* Left Side - Illustration */}
         <div className="hidden md:flex md:w-1/2 bg-[#f8fbfd] flex-col items-center justify-center border-r border-gray-100 p-8">
            <img 
@@ -65,3 +65,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

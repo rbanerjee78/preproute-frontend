@@ -79,7 +79,7 @@ export default function DashboardPage() {
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white border border-[var(--color-border-light)] rounded-lg p-6 flex items-center gap-4">
+        <div className="bg-[var(--color-surface)] border border-[var(--color-border-light)] rounded-lg p-6 flex items-center gap-4">
           <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
             <FileText className="w-6 h-6" />
           </div>
@@ -88,7 +88,7 @@ export default function DashboardPage() {
             <h3 className="text-2xl font-bold text-[var(--color-text-primary)]">24</h3>
           </div>
         </div>
-        <div className="bg-white border border-[var(--color-border-light)] rounded-lg p-6 flex items-center gap-4">
+        <div className="bg-[var(--color-surface)] border border-[var(--color-border-light)] rounded-lg p-6 flex items-center gap-4">
           <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center text-green-600">
             <Users className="w-6 h-6" />
           </div>
@@ -97,7 +97,7 @@ export default function DashboardPage() {
             <h3 className="text-2xl font-bold text-[var(--color-text-primary)]">842</h3>
           </div>
         </div>
-        <div className="bg-white border border-[var(--color-border-light)] rounded-lg p-6 flex items-center gap-4">
+        <div className="bg-[var(--color-surface)] border border-[var(--color-border-light)] rounded-lg p-6 flex items-center gap-4">
           <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center text-orange-600">
             <BarChart2 className="w-6 h-6" />
           </div>
@@ -117,18 +117,18 @@ export default function DashboardPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search tests by name, subject, or topic..." 
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-[var(--color-border-light)] rounded-md text-sm focus:outline-none focus:border-[var(--color-brand-primary)] focus:ring-1 focus:ring-[var(--color-brand-primary)]"
+            className="w-full pl-10 pr-4 py-2.5 bg-[var(--color-surface)] border border-[var(--color-border-light)] rounded-md text-sm focus:outline-none focus:border-[var(--color-brand-primary)] focus:ring-1 focus:ring-[var(--color-brand-primary)]"
           />
         </div>
         <div className="flex items-center gap-3 w-full md:w-auto">
-          <button className="flex items-center justify-center gap-2 px-4 py-2.5 border border-[var(--color-border-light)] rounded-md bg-white text-sm font-medium text-[var(--color-text-secondary)] hover:bg-gray-50 transition-colors">
+          <button className="flex items-center justify-center gap-2 px-4 py-2.5 border border-[var(--color-border-light)] rounded-md bg-[var(--color-surface)] text-sm font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] transition-colors">
             <Filter className="w-4 h-4" />
             Filter
           </button>
           <select 
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2.5 border border-[var(--color-border-light)] rounded-md bg-white text-sm font-medium text-[var(--color-text-secondary)] focus:outline-none focus:border-[var(--color-brand-primary)]"
+            className="px-4 py-2.5 border border-[var(--color-border-light)] rounded-md bg-[var(--color-surface)] text-sm font-medium text-[var(--color-text-secondary)] focus:outline-none focus:border-[var(--color-brand-primary)]"
           >
             <option value="All Status">All Status</option>
             <option value="Published">Published</option>
@@ -141,13 +141,13 @@ export default function DashboardPage() {
       {filteredTests.length > 0 ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           {filteredTests.map(test => (
-            <div key={test.id} className="bg-white border border-[var(--color-border-light)] rounded-xl overflow-hidden hover:shadow-md transition-shadow">
+            <div key={test.id} className="bg-[var(--color-surface)] border border-[var(--color-border-light)] rounded-xl overflow-hidden hover:shadow-md transition-shadow">
             {/* Card Header */}
             <div className="p-5 border-b border-[var(--color-border-light)]">
               <div className="flex justify-between items-start mb-3">
                 <div className="flex items-center gap-2">
                   <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${
-                    test.status === 'Published' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
+                    test.status === 'Published' ? 'bg-green-100 text-green-700' : 'bg-[var(--color-border-light)] text-gray-700'
                   }`}>
                     {test.status}
                   </span>
@@ -176,7 +176,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Card Body */}
-            <div className="p-5 bg-gray-50/50">
+            <div className="p-5 bg-[var(--color-surface-hover)]/50">
               <div className="grid grid-cols-2 gap-y-4 text-sm">
                 <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
                   <HelpCircle className="w-4 h-4 text-gray-400" />
@@ -198,7 +198,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Card Footer */}
-            <div className="p-4 border-t border-[var(--color-border-light)] flex justify-between items-center bg-white">
+            <div className="p-4 border-t border-[var(--color-border-light)] flex justify-between items-center bg-[var(--color-surface)]">
               <div className="flex items-center gap-1.5 text-sm text-[var(--color-text-secondary)]">
                 <Users className="w-4 h-4" />
                 <span><strong className="text-[var(--color-text-primary)] font-semibold">{test.participants}</strong> Participated</span>
@@ -211,8 +211,8 @@ export default function DashboardPage() {
         ))}
       </div>
       ) : (
-        <div className="flex flex-col items-center justify-center py-16 px-4 bg-white border border-[var(--color-border-light)] rounded-xl text-center">
-          <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+        <div className="flex flex-col items-center justify-center py-16 px-4 bg-[var(--color-surface)] border border-[var(--color-border-light)] rounded-xl text-center">
+          <div className="w-16 h-16 bg-[var(--color-surface-hover)] rounded-full flex items-center justify-center mb-4">
             <Search className="w-8 h-8 text-gray-400" />
           </div>
           <h3 className="text-lg font-bold text-[var(--color-text-primary)] mb-2">No tests found</h3>
@@ -230,3 +230,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+

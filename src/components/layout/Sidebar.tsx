@@ -13,7 +13,7 @@ export const Sidebar = ({ onMobileClose }: { onMobileClose?: () => void }) => {
 
   if (isQuestionCreation) {
     return (
-      <aside className={`${isCollapsed ? 'w-16' : 'w-64'} transition-all duration-300 ease-in-out h-screen border-r border-[var(--color-sidebar-border)] bg-white flex flex-col flex-shrink-0 shadow-xl md:shadow-none relative`}>
+      <aside className={`${isCollapsed ? 'w-16' : 'w-64'} transition-all duration-300 ease-in-out h-screen border-r border-[var(--color-sidebar-border)] bg-[var(--color-surface)] flex flex-col flex-shrink-0 shadow-xl md:shadow-none relative`}>
         <div className={`h-16 flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-between px-6'} border-b border-[var(--color-sidebar-border)]`}>
           <Link href="/" className="flex items-center gap-2" onClick={onMobileClose}>
             {isCollapsed ? (
@@ -116,7 +116,7 @@ export const Sidebar = ({ onMobileClose }: { onMobileClose?: () => void }) => {
           href="/dashboard" 
           onClick={onMobileClose}
           title="Dashboard"
-          className={`flex items-center gap-3 py-2.5 rounded-md text-sm font-medium ${pathname === '/dashboard' || pathname === '/' ? 'text-[var(--color-brand-primary)] bg-[var(--color-brand-light)] border-l-2 border-[var(--color-brand-primary)] rounded-l-none' : 'text-[var(--color-text-secondary)] hover:bg-gray-100 hover:text-gray-900'} ${isCollapsed ? 'justify-center px-0' : 'px-3'}`}
+          className={`flex items-center gap-3 py-2.5 rounded-md text-sm font-medium ${pathname === '/dashboard' || pathname === '/' ? 'text-[var(--color-brand-primary)] bg-[var(--color-brand-light)] border-l-2 border-[var(--color-brand-primary)] rounded-l-none' : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-border-light)] hover:text-gray-900'} ${isCollapsed ? 'justify-center px-0' : 'px-3'}`}
         >
           <LayoutDashboard className="w-5 h-5 flex-shrink-0" />
           {!isCollapsed && <span>Dashboard</span>}
@@ -125,7 +125,7 @@ export const Sidebar = ({ onMobileClose }: { onMobileClose?: () => void }) => {
           href="/create-test" 
           onClick={onMobileClose}
           title="Test Creation"
-          className={`flex items-center gap-3 py-2.5 rounded-md text-sm font-medium ${pathname.includes('/create-test') ? 'text-[var(--color-brand-primary)] bg-[var(--color-brand-light)] border-l-2 border-[var(--color-brand-primary)] rounded-l-none' : 'text-[var(--color-text-secondary)] hover:bg-gray-100 hover:text-gray-900'} ${isCollapsed ? 'justify-center px-0' : 'px-3'}`}
+          className={`flex items-center gap-3 py-2.5 rounded-md text-sm font-medium ${pathname.includes('/create-test') ? 'text-[var(--color-brand-primary)] bg-[var(--color-brand-light)] border-l-2 border-[var(--color-brand-primary)] rounded-l-none' : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-border-light)] hover:text-gray-900'} ${isCollapsed ? 'justify-center px-0' : 'px-3'}`}
         >
           <FileEdit className="w-5 h-5 flex-shrink-0" />
           {!isCollapsed && <span>Test Creation</span>}
@@ -134,7 +134,7 @@ export const Sidebar = ({ onMobileClose }: { onMobileClose?: () => void }) => {
           href="/tracking" 
           onClick={onMobileClose}
           title="Test Tracking"
-          className={`flex items-center gap-3 py-2.5 rounded-md text-sm font-medium ${pathname === '/tracking' ? 'text-[var(--color-brand-primary)] bg-white shadow-sm' : 'text-[var(--color-text-secondary)] hover:bg-gray-100 hover:text-gray-900'} ${isCollapsed ? 'justify-center px-0' : 'px-3'}`}
+          className={`flex items-center gap-3 py-2.5 rounded-md text-sm font-medium ${pathname === '/tracking' ? 'text-[var(--color-brand-primary)] bg-[var(--color-surface)] shadow-sm' : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-border-light)] hover:text-gray-900'} ${isCollapsed ? 'justify-center px-0' : 'px-3'}`}
         >
           <ClipboardList className="w-5 h-5 flex-shrink-0" />
           {!isCollapsed && <span>Test Tracking</span>}
@@ -144,7 +144,7 @@ export const Sidebar = ({ onMobileClose }: { onMobileClose?: () => void }) => {
       <div className="p-4 mt-auto border-t border-[var(--color-sidebar-border)] hidden md:block">
         <button 
           onClick={() => setIsCollapsed(!isCollapsed)} 
-          className="flex items-center justify-center w-full p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+          className="flex items-center justify-center w-full p-2 text-gray-500 hover:text-gray-700 hover:bg-[var(--color-border-light)] rounded-md transition-colors"
         >
           {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
         </button>
@@ -152,3 +152,4 @@ export const Sidebar = ({ onMobileClose }: { onMobileClose?: () => void }) => {
     </aside>
   );
 };
+

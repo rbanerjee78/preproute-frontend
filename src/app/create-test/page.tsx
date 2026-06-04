@@ -19,10 +19,10 @@ export default function CreateTestPage() {
         <button className="px-6 py-2 rounded-md bg-[var(--color-brand-light)] text-[var(--color-brand-dark)] font-medium text-sm">
           Chapter Wise
         </button>
-        <button className="px-6 py-2 rounded-md text-[var(--color-text-muted)] hover:bg-gray-50 font-medium text-sm transition-colors">
+        <button className="px-6 py-2 rounded-md text-[var(--color-text-muted)] hover:bg-[var(--color-surface-hover)] font-medium text-sm transition-colors">
           PYQ
         </button>
-        <button className="px-6 py-2 rounded-md text-[var(--color-text-muted)] hover:bg-gray-50 font-medium text-sm transition-colors">
+        <button className="px-6 py-2 rounded-md text-[var(--color-text-muted)] hover:bg-[var(--color-surface-hover)] font-medium text-sm transition-colors">
           Mock Test
         </button>
       </div>
@@ -148,7 +148,7 @@ export default function CreateTestPage() {
           </div>
           <div className="space-y-2 w-full md:w-48">
             <label className="text-sm font-semibold text-gray-300">Total Marks</label>
-            <input type="text" placeholder="Ex:250 Marks" disabled className="w-full px-4 py-2.5 rounded-md border border-[var(--color-border-light)] text-sm placeholder-gray-300 bg-white opacity-60" />
+            <input type="text" placeholder="Ex:250 Marks" disabled className="w-full px-4 py-2.5 rounded-md border border-[var(--color-border-light)] text-sm placeholder-gray-300 bg-[var(--color-surface)] opacity-60" />
           </div>
         </div>
       </div>
@@ -167,3 +167,4 @@ export default function CreateTestPage() {
     </div>
   );
 }
+

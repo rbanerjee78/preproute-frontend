@@ -24,10 +24,11 @@ export const PageLayout = ({ children }: { children: React.ReactNode }) => {
 
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         <Header onMenuClick={() => setSidebarOpen(true)} />
-        <main className="flex-1 overflow-y-auto bg-white">
+        <main className="flex-1 overflow-y-auto bg-[var(--color-surface)]">
           {children}
         </main>
       </div>
     </div>
   );
 };
+

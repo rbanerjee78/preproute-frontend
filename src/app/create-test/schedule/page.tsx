@@ -19,7 +19,7 @@ export default function SchedulePublishPage() {
       </div>
 
       {/* Test Summary Card */}
-      <div className="border border-[var(--color-border-light)] rounded-lg p-6 mb-8 bg-white relative">
+      <div className="border border-[var(--color-border-light)] rounded-lg p-6 mb-8 bg-[var(--color-surface)] relative">
         <div className="flex justify-between items-start mb-4">
           <div className="flex items-center gap-3">
             <span className="bg-[#1f2937] text-white text-xs font-semibold px-3 py-1 rounded-full">Chapter Wise</span>
@@ -43,7 +43,7 @@ export default function SchedulePublishPage() {
             <span className="text-[var(--color-text-primary)] font-medium">: English</span>
           </div>
           <div className="row-span-3 flex flex-col justify-end items-end gap-3 pb-1">
-            <div className="flex items-center gap-4 text-[var(--color-text-secondary)] text-sm border border-[var(--color-border-light)] rounded-md px-4 py-2 bg-gray-50">
+            <div className="flex items-center gap-4 text-[var(--color-text-secondary)] text-sm border border-[var(--color-border-light)] rounded-md px-4 py-2 bg-[var(--color-surface-hover)]">
               <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" /> 60 Min</span>
               <div className="w-px h-4 bg-gray-300 mx-1"></div>
               <span className="flex items-center gap-1.5"><HelpCircle className="w-4 h-4" /> 50 Q's</span>
@@ -68,8 +68,8 @@ export default function SchedulePublishPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border border-[var(--color-border-light)] rounded-lg p-1 w-fit mb-8 bg-white">
-        <button className="px-6 py-2 rounded-md text-[var(--color-text-muted)] hover:bg-gray-50 font-medium text-sm transition-colors">
+      <div className="flex border border-[var(--color-border-light)] rounded-lg p-1 w-fit mb-8 bg-[var(--color-surface)]">
+        <button className="px-6 py-2 rounded-md text-[var(--color-text-muted)] hover:bg-[var(--color-surface-hover)] font-medium text-sm transition-colors">
           Publish Now
         </button>
         <button className="px-6 py-2 rounded-md bg-[var(--color-brand-light)] text-[var(--color-brand-dark)] font-medium text-sm shadow-sm">
@@ -147,3 +147,4 @@ export default function SchedulePublishPage() {
     </div>
   );
 }
+

@@ -8,3 +8,4 @@ export default function DashboardLayout({
 }) {
   return <PageLayout>{children}</PageLayout>;
 }
+

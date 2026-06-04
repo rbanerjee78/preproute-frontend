@@ -1,14 +1,31 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Bell } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Bell, Moon, Sun } from 'lucide-react';
 
 export const Header = ({ onMenuClick }: { onMenuClick?: () => void }) => {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    if (document.documentElement.classList.contains('dark')) {
+      setIsDarkMode(true);
+    }
+  }, []);
+
+  const toggleDarkMode = () => {
+    if (isDarkMode) {
+      document.documentElement.classList.remove('dark');
+      setIsDarkMode(false);
+    } else {
+      document.documentElement.classList.add('dark');
+      setIsDarkMode(true);
+    }
+  };
 
   return (
-    <header className="h-16 border-b border-[var(--color-sidebar-border)] bg-white flex items-center justify-between px-4 md:px-8 flex-shrink-0">
+    <header className="h-16 border-b border-[var(--color-sidebar-border)] bg-[var(--color-bg-main)] flex items-center justify-between px-4 md:px-8 flex-shrink-0">
       <div className="flex-1 flex items-center gap-4">
         <button 
           onClick={onMenuClick}
@@ -32,17 +49,17 @@ export const Header = ({ onMenuClick }: { onMenuClick?: () => void }) => {
           </button>
           
           {isNotifOpen && (
-            <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-100 rounded-lg shadow-xl z-50 py-2">
-              <div className="px-4 py-2 border-b border-gray-100 font-bold text-sm text-[var(--color-text-primary)]">Notifications</div>
-              <div className="px-4 py-3 text-sm text-[var(--color-text-secondary)] hover:bg-gray-50 cursor-pointer border-b border-gray-50">
+            <div className="absolute right-0 mt-2 w-72 bg-[var(--color-bg-main)] border border-[var(--color-border-light)] rounded-lg shadow-xl z-50 py-2">
+              <div className="px-4 py-2 border-b border-[var(--color-border-light)] font-bold text-sm text-[var(--color-text-primary)]">Notifications</div>
+              <div className="px-4 py-3 text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] dark:hover:bg-gray-800 cursor-pointer border-b border-[var(--color-border-light)]">
                 <span className="font-semibold text-[var(--color-text-primary)]">System</span><br/>
                 Your test "Chapter 1" has been successfully created.
               </div>
-              <div className="px-4 py-3 text-sm text-[var(--color-text-secondary)] hover:bg-gray-50 cursor-pointer">
+              <div className="px-4 py-3 text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] dark:hover:bg-gray-800 cursor-pointer">
                 <span className="font-semibold text-[var(--color-text-primary)]">Alex</span><br/>
                 Please review the marking scheme.
               </div>
-              <div className="px-4 py-2 border-t border-gray-100 text-center">
+              <div className="px-4 py-2 border-t border-[var(--color-border-light)] text-center">
                 <span className="text-xs font-semibold text-[var(--color-brand-primary)] cursor-pointer hover:underline">Mark all as read</span>
               </div>
             </div>
@@ -53,7 +70,7 @@ export const Header = ({ onMenuClick }: { onMenuClick?: () => void }) => {
         <div className="relative">
           <div 
             onClick={() => { setIsProfileOpen(!isProfileOpen); setIsNotifOpen(false); }}
-            className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-1.5 rounded-lg transition-colors"
+            className="flex items-center gap-3 cursor-pointer hover:bg-[var(--color-surface-hover)] p-1.5 rounded-lg transition-colors"
           >
             <div className="w-10 h-10 rounded-full bg-orange-200 flex items-center justify-center overflow-hidden border border-orange-300">
               {/* Avatar placeholder */}
@@ -71,11 +88,18 @@ export const Header = ({ onMenuClick }: { onMenuClick?: () => void }) => {
           </div>
           
           {isProfileOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-100 rounded-lg shadow-xl z-50 py-1">
-              <div className="px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] hover:bg-gray-50 cursor-pointer transition-colors">My Profile</div>
-              <div className="px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] hover:bg-gray-50 cursor-pointer transition-colors">Account Settings</div>
-              <div className="border-t border-gray-100 my-1"></div>
-              <div className="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 cursor-pointer transition-colors">Sign Out</div>
+            <div className="absolute right-0 mt-2 w-48 bg-[var(--color-bg-main)] border border-[var(--color-border-light)] rounded-lg shadow-xl z-50 py-1">
+              <div className="px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)] dark:hover:bg-gray-800 cursor-pointer transition-colors">My Profile</div>
+              <div className="px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)] dark:hover:bg-gray-800 cursor-pointer transition-colors">Account Settings</div>
+              <div 
+                onClick={(e) => { e.stopPropagation(); toggleDarkMode(); }}
+                className="px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)] dark:hover:bg-gray-800 cursor-pointer transition-colors flex items-center justify-between"
+              >
+                <span>Dark Theme</span>
+                {isDarkMode ? <Moon className="w-4 h-4 text-blue-400" /> : <Sun className="w-4 h-4 text-gray-500" />}
+              </div>
+              <div className="border-t border-[var(--color-border-light)] my-1"></div>
+              <div className="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 cursor-pointer transition-colors">Sign Out</div>
             </div>
           )}
         </div>
@@ -83,3 +107,4 @@ export const Header = ({ onMenuClick }: { onMenuClick?: () => void }) => {
     </header>
   );
 };
+

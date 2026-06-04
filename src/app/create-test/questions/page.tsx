@@ -188,9 +188,9 @@ export default function AddQuestionsPage() {
             difficulty: 'medium',
             type: 'single_correct',
             test_id: testId,
-            subject: testDetails?.subject?.id || testDetails?.subject || 'Unknown',
-            topic: testDetails?.topics?.[0]?.id || testDetails?.topics?.[0] || 'Unknown',
-            sub_topic: testDetails?.sub_topics?.[0]?.id || testDetails?.sub_topics?.[0] || 'Unknown'
+            subject: testDetails?.subject?.id || testDetails?.subject || '',
+            topic: testDetails?.topics?.[0]?.id || testDetails?.topics?.[0] || '',
+            sub_topic: testDetails?.sub_topics?.[0]?.id || testDetails?.sub_topics?.[0] || ''
           };
         });
 

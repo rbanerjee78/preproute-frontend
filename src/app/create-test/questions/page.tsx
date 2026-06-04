@@ -186,7 +186,7 @@ export default function AddQuestionsPage() {
             correct_option: `option${correctOption || '1'}`,
             explanation: explanation || '',
             difficulty: 'medium',
-            type: 'single_correct',
+            type: 'mcq',
             test_id: testId,
             subject: testDetails?.subject?.id || testDetails?.subject || '',
             topic: testDetails?.topics?.[0]?.id || testDetails?.topics?.[0] || '',

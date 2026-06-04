@@ -195,6 +195,23 @@ export default function AddQuestionsPage() {
         });
 
         setQuestionsList(prev => [...prev, ...newQuestions]);
+        
+        // If the form was empty, automatically load the first imported question into view
+        if (questionsList.length === 0 && newQuestions.length > 0) {
+          const q = newQuestions[0];
+          setQuestionText(q.question);
+          setOptions([
+            { id: 1, text: q.option1 },
+            { id: 2, text: q.option2 },
+            { id: 3, text: q.option3 },
+            { id: 4, text: q.option4 },
+          ]);
+          setCorrectOptionId(parseInt(q.correct_option.replace('option', '')) || 1);
+          setSolution(q.explanation || '');
+          setDifficulty(q.difficulty || 'medium');
+          setCurrentQIndex(0);
+        }
+
         alert(`Successfully imported ${newQuestions.length} questions from CSV!`);
       } catch (err) {
         console.error(err);

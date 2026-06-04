@@ -4,7 +4,7 @@
  * Configured according to the official Frontend Developer Task specification.
  */
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.preproute.com/v1';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://admin-moderator-backend-staging.up.railway.app/api';
 
 /**
  * Generic fetch wrapper to handle JSON, headers, and errors

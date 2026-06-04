@@ -235,7 +235,16 @@ export default function AddQuestionsPage() {
 
     setLoading(true);
     try {
-      await api.questions.bulkCreate(questionsList);
+      const sanitizedList = questionsList.map(q => ({
+        ...q,
+        sub_topic: q.sub_topic || '',
+        paragraph: q.paragraph || '',
+        media_url: q.media_url || '',
+        category: q.category || '',
+        subject: q.subject || '',
+        topic: q.topic || ''
+      }));
+      await api.questions.bulkCreate(sanitizedList);
       router.push(`/create-test/schedule?testId=${testId}`);
     } catch (err: any) {
       setError(err.message || 'Failed to submit questions');

@@ -235,16 +235,21 @@ export default function AddQuestionsPage() {
 
     setLoading(true);
     try {
-      const sanitizedList = questionsList.map(q => ({
-        ...q,
-        sub_topic: q.sub_topic || '',
-        paragraph: q.paragraph || '',
-        media_url: q.media_url || '',
-        category: q.category || '',
-        subject: q.subject || '',
-        topic: q.topic || ''
-      }));
-      await api.questions.bulkCreate(sanitizedList);
+      const sanitizedList = questionsList
+        .filter((q: any) => !q.id)
+        .map(q => ({
+          ...q,
+          sub_topic: q.sub_topic || '',
+          paragraph: q.paragraph || '',
+          media_url: q.media_url || '',
+          category: q.category || '',
+          subject: q.subject || '',
+          topic: q.topic || ''
+        }));
+        
+      if (sanitizedList.length > 0) {
+        await api.questions.bulkCreate(sanitizedList);
+      }
       router.push(`/create-test/schedule?testId=${testId}`);
     } catch (err: any) {
       setError(err.message || 'Failed to submit questions');

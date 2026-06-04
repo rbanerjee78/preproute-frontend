@@ -1,105 +1,153 @@
 /**
  * Preproute API Service Layer
  * 
- * This file contains all the boilerplate functions for API integration.
- * Once the backend endpoints are back online, simply replace the `BASE_URL` 
- * and remove the mock `Promise.resolve` returns to make actual fetch requests.
+ * Configured according to the official Frontend Developer Task specification.
  */
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.preproute.com/v1';
 
 /**
- * Generic fetch wrapper to handle JSON and errors consistently
+ * Generic fetch wrapper to handle JSON, headers, and errors
  */
 async function fetchAPI(endpoint: string, options: RequestInit = {}) {
-  // Uncomment the lines below to enable actual API calls
+  // To enable real API calls, uncomment this block and remove the mock code below.
   /*
-  const response = await fetch(`${BASE_URL}${endpoint}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      // 'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      ...options.headers,
-    },
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'An error occurred with the API request');
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+  };
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
   }
 
-  return response.json();
+  const response = await fetch(`${BASE_URL}${endpoint}`, {
+    ...options,
+    headers,
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || 'An error occurred with the API request');
+  }
+
+  return data;
   */
 
-  // Temporary mock implementation for UI development
-  console.log(`[Mock API Call] ${options.method || 'GET'} ${endpoint}`, options.body ? JSON.parse(options.body as string) : '');
-  return Promise.resolve({ success: true, message: 'Mock API response' });
+  // --- MOCK IMPLEMENTATION FOR UI DEVELOPMENT ---
+  console.log(`[Mock API] ${options.method || 'GET'} ${endpoint}`, options.body ? JSON.parse(options.body as string) : '');
+  return Promise.resolve({ success: true, data: {}, message: 'Mock API response' });
 }
 
 export const api = {
   // ==========================================
-  // Authentication
+  // 1. Authentication
   // ==========================================
   auth: {
-    login: async (credentials: any) => {
+    login: async (credentials: { userId: string; password: string }) => {
       // return fetchAPI('/auth/login', { method: 'POST', body: JSON.stringify(credentials) });
-      return Promise.resolve({ token: 'mock-jwt-token', user: { name: 'Alex Wando', role: 'admin' } });
+      return Promise.resolve({
+        success: true,
+        data: { token: 'mock-jwt-token', user: { name: 'Alex Wando', role: 'admin' } }
+      });
     },
     logout: () => {
-      // localStorage.removeItem('token');
+      // if (typeof window !== 'undefined') localStorage.removeItem('token');
       console.log('Logged out');
     }
   },
 
   // ==========================================
-  // Dashboard & Tests
+  // 2-4 & 11. Subjects, Topics, Sub-topics
+  // ==========================================
+  taxonomy: {
+    getSubjects: async () => {
+      // return fetchAPI('/subjects');
+      return Promise.resolve({ success: true, data: [{ id: 'sub-uuid', name: 'Mathematics' }] });
+    },
+    getTopicsBySubject: async (subjectId: string) => {
+      // return fetchAPI(`/topics/subject/${subjectId}`);
+      return Promise.resolve({ success: true, data: [{ id: 'top-uuid', name: 'Algebra', subject_id: subjectId }] });
+    },
+    getSubTopicsByTopic: async (topicId: string) => {
+      // return fetchAPI(`/sub-topics/topic/${topicId}`);
+      return Promise.resolve({ success: true, data: [{ id: 'subtop-uuid', name: 'Linear Equations', topic_id: topicId }] });
+    },
+    getSubTopicsByMultipleTopics: async (topicIds: string[]) => {
+      // return fetchAPI('/sub-topics/multi-topics', { method: 'POST', body: JSON.stringify({ topicIds }) });
+      return Promise.resolve({ success: true, data: [] });
+    }
+  },
+
+  // ==========================================
+  // 5-8 & 10. Tests
   // ==========================================
   tests: {
-    /** Fetch all tests for the dashboard */
-    getAll: async (filters?: any) => {
-      // const queryParams = new URLSearchParams(filters).toString();
-      // return fetchAPI(`/tests?${queryParams}`);
-      return Promise.resolve([]);
+    getAll: async () => {
+      // return fetchAPI('/tests');
+      return Promise.resolve({ success: true, data: [] });
     },
-    
-    /** Create a new test (Initial configuration step) */
-    create: async (testData: any) => {
+    getById: async (id: string) => {
+      // return fetchAPI(`/tests/${id}`);
+      return Promise.resolve({ success: true, data: { id, name: 'Sample Test', subject: 'Mathematics' } });
+    },
+    create: async (testData: {
+      name: string;
+      type: string;
+      subject: string;
+      topics: string[];
+      sub_topics: string[];
+      correct_marks: number;
+      wrong_marks: number;
+      unattempt_marks: number;
+      difficulty: string;
+      total_time: number;
+      total_marks: number;
+      total_questions: number;
+      status: string | null;
+    }) => {
       // return fetchAPI('/tests', { method: 'POST', body: JSON.stringify(testData) });
-      return Promise.resolve({ id: 'new-test-123', ...testData });
+      return Promise.resolve({ success: true, data: { id: 'new-test-uuid', ...testData }, message: "Test created successfully" });
     },
-
-    /** Delete a test */
-    delete: async (testId: string | number) => {
-      // return fetchAPI(`/tests/${testId}`, { method: 'DELETE' });
-      return Promise.resolve({ success: true });
+    update: async (id: string, updateData: {
+      name?: string;
+      questions?: string[];
+      total_questions?: number;
+      total_marks?: number;
+    }) => {
+      // return fetchAPI(`/tests/${id}`, { method: 'PUT', body: JSON.stringify(updateData) });
+      return Promise.resolve({ success: true, data: updateData });
+    },
+    publish: async (id: string) => {
+      // return fetchAPI(`/tests/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'live' }) });
+      return Promise.resolve({ success: true, message: "Test published successfully" });
     }
   },
 
   // ==========================================
-  // Questions
+  // 9 & 12. Questions
   // ==========================================
   questions: {
-    /** Save questions mapped to a specific test */
-    saveBatch: async (testId: string | number, questionsData: any[]) => {
-      // return fetchAPI(`/tests/${testId}/questions`, { 
-      //   method: 'POST', 
-      //   body: JSON.stringify({ questions: questionsData }) 
-      // });
-      return Promise.resolve({ success: true, count: questionsData.length });
-    }
-  },
-
-  // ==========================================
-  // Scheduling & Publishing
-  // ==========================================
-  schedule: {
-    /** Publish a test with start/end date and time constraints */
-    publish: async (testId: string | number, scheduleData: any) => {
-      // return fetchAPI(`/tests/${testId}/publish`, { 
-      //   method: 'POST', 
-      //   body: JSON.stringify(scheduleData) 
-      // });
-      return Promise.resolve({ success: true, status: 'Published' });
+    bulkCreate: async (questions: {
+      type: string;
+      question: string;
+      option1: string;
+      option2: string;
+      option3: string;
+      option4: string;
+      correct_option: string;
+      explanation?: string;
+      difficulty?: string;
+      test_id: string;
+    }[]) => {
+      // return fetchAPI('/questions/bulk', { method: 'POST', body: JSON.stringify({ questions }) });
+      return Promise.resolve({ success: true, data: [{ id: 'q-uuid' }], message: `Successfully created ${questions.length} questions` });
+    },
+    fetchBulk: async (questionIds: string[]) => {
+      // return fetchAPI('/questions/fetchBulk', { method: 'POST', body: JSON.stringify({ question_ids: questionIds }) });
+      return Promise.resolve({ success: true, data: [] });
     }
   }
 };

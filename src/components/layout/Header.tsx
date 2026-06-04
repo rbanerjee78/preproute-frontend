@@ -1,9 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Bell, Moon, Sun } from 'lucide-react';
+import { api } from '@/services/api';
 
 export const Header = ({ onMenuClick }: { onMenuClick?: () => void }) => {
+  const router = useRouter();
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -99,7 +102,15 @@ export const Header = ({ onMenuClick }: { onMenuClick?: () => void }) => {
                 {isDarkMode ? <Sun className="w-4 h-4 text-orange-400" /> : <Moon className="w-4 h-4 text-gray-500" />}
               </div>
               <div className="border-t border-[var(--color-border-light)] my-1"></div>
-              <div className="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 cursor-pointer transition-colors">Sign Out</div>
+              <div 
+                onClick={() => {
+                  api.auth.logout();
+                  router.push('/login');
+                }}
+                className="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 cursor-pointer transition-colors"
+              >
+                Sign Out
+              </div>
             </div>
           )}
         </div>

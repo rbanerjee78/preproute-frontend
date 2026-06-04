@@ -1,20 +1,78 @@
-import React from 'react';
+"use client";
+
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Pencil, Clock, HelpCircle, FileText, CheckCircle2, Calendar, ChevronDown } from 'lucide-react';
+import { api } from '@/services/api';
 
 export default function SchedulePublishPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const testId = searchParams.get('testId');
+
+  const [testDetails, setTestDetails] = useState<any>(null);
+  const [publishType, setPublishType] = useState('publish_now'); // 'publish_now' or 'schedule'
+  const [scheduleDate, setScheduleDate] = useState('');
+  const [scheduleTime, setScheduleTime] = useState('');
+  
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (testId) {
+      api.tests.getById(testId).then(res => {
+        setTestDetails(res.data || res);
+      }).catch(console.error);
+    }
+  }, [testId]);
+
+  const handlePublish = async () => {
+    if (!testId) {
+      setError('Test ID is missing.');
+      return;
+    }
+    
+    setLoading(true);
+    setError('');
+    
+    try {
+      let combinedDate = undefined;
+      if (publishType === 'schedule') {
+        if (!scheduleDate || !scheduleTime) {
+          throw new Error("Please select both date and time for scheduling.");
+        }
+        combinedDate = new Date(`${scheduleDate}T${scheduleTime}`).toISOString();
+      }
+      
+      await api.tests.publish(testId, combinedDate);
+      alert('Test published successfully!');
+      router.push('/dashboard');
+    } catch (err: any) {
+      setError(err.message || 'Failed to publish test.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="p-8 max-w-5xl">
+    <div className="p-8 max-w-5xl mx-auto">
       {/* Header and Breadcrumbs */}
       <div className="flex items-center text-sm text-[var(--color-text-secondary)] mb-6">
-        <span>Test creation</span>
+        <span>Test Creation</span>
+        <span className="mx-2">/</span>
+        <span>Create Test</span>
+        <span className="mx-2">/</span>
+        <span>Add Questions</span>
+        <span className="mx-2">/</span>
+        <span className="text-[var(--color-text-primary)] font-medium">Schedule Test</span>
       </div>
 
       {/* Test Created Success Badge */}
       <div className="flex items-center gap-4 mb-6">
-        <h2 className="text-lg font-bold text-[var(--color-text-primary)]">Test created</h2>
+        <h2 className="text-lg font-bold text-[var(--color-text-primary)]">Questions added</h2>
         <div className="flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-600 border border-green-200 rounded-full text-xs font-semibold">
-          <CheckCircle2 className="w-3.5 h-3.5" /> All 50 Questions done
+          <CheckCircle2 className="w-3.5 h-3.5" /> All questions ready
         </div>
       </div>
 
@@ -24,127 +82,102 @@ export default function SchedulePublishPage() {
           <div className="flex items-center gap-3">
             <span className="bg-[#1f2937] text-white text-xs font-semibold px-3 py-1 rounded-full">Chapter Wise</span>
           </div>
-          <button className="text-[var(--color-brand-secondary)] hover:text-[var(--color-brand-primary)]">
-            <Pencil className="w-5 h-5" />
-          </button>
+          <Link href={`/create-test?testId=${testId}`}>
+            <button className="text-[var(--color-brand-secondary)] hover:text-[var(--color-brand-primary)]">
+              <Pencil className="w-5 h-5" />
+            </button>
+          </Link>
         </div>
         
         <div className="flex items-center gap-4 mb-6">
           <div className="w-8 h-8 bg-orange-100 rounded flex items-center justify-center text-orange-500 font-bold text-lg">P</div>
-          <h2 className="text-xl font-bold text-[var(--color-text-primary)]">Chapter 1</h2>
-          <span className="bg-teal-100 text-teal-700 text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1">
-            <div className="w-2 h-2 bg-teal-500 rounded-full"></div> Easy
+          <h2 className="text-xl font-bold text-[var(--color-text-primary)]">{testDetails?.name || 'Untitled Test'}</h2>
+          <span className={`text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1 ${
+             testDetails?.difficulty === 'easy' ? 'bg-teal-100 text-teal-700' : 
+             testDetails?.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'
+          }`}>
+            <div className={`w-2 h-2 rounded-full ${
+              testDetails?.difficulty === 'easy' ? 'bg-teal-500' : 
+              testDetails?.difficulty === 'medium' ? 'bg-yellow-500' : 'bg-red-500'
+            }`}></div> {testDetails?.difficulty || 'N/A'}
           </span>
         </div>
 
         <div className="grid grid-cols-2 gap-y-3 text-sm">
           <div className="flex">
             <span className="text-[var(--color-text-secondary)] w-24">Subject</span>
-            <span className="text-[var(--color-text-primary)] font-medium">: English</span>
+            <span className="text-[var(--color-text-primary)] font-medium">: {testDetails?.subject || 'Unknown'}</span>
           </div>
           <div className="row-span-3 flex flex-col justify-end items-end gap-3 pb-1">
             <div className="flex items-center gap-4 text-[var(--color-text-secondary)] text-sm border border-[var(--color-border-light)] rounded-md px-4 py-2 bg-[var(--color-surface-hover)]">
-              <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" /> 60 Min</span>
+              <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" /> {testDetails?.total_time || 0} Min</span>
               <div className="w-px h-4 bg-gray-300 mx-1"></div>
-              <span className="flex items-center gap-1.5"><HelpCircle className="w-4 h-4" /> 50 Q's</span>
+              <span className="flex items-center gap-1.5"><HelpCircle className="w-4 h-4" /> {testDetails?.total_questions || 0} Q's</span>
               <div className="w-px h-4 bg-gray-300 mx-1"></div>
-              <span className="flex items-center gap-1.5"><FileText className="w-4 h-4" /> 250 Marks</span>
+              <span className="flex items-center gap-1.5"><FileText className="w-4 h-4" /> {testDetails?.total_marks || 0} Marks</span>
             </div>
-          </div>
-          <div className="flex items-center">
-            <span className="text-[var(--color-text-secondary)] w-24">Topic</span>
-            <span className="flex items-center gap-2">
-              <span className="text-yellow-600 border border-yellow-200 bg-yellow-50 px-2 py-0.5 rounded text-xs">: Grammar</span>
-              <span className="text-yellow-600 border border-yellow-200 bg-yellow-50 px-2 py-0.5 rounded text-xs">Writing</span>
-            </span>
-          </div>
-          <div className="flex items-center">
-            <span className="text-[var(--color-text-secondary)] w-24">Sub Topic</span>
-            <span className="flex items-center gap-2">
-              <span className="text-yellow-600 border border-yellow-200 bg-yellow-50 px-2 py-0.5 rounded text-xs">: Application</span>
-            </span>
           </div>
         </div>
       </div>
 
+      {error && <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-md border border-red-200">{error}</div>}
+
       {/* Tabs */}
       <div className="flex border border-[var(--color-border-light)] rounded-lg p-1 w-fit mb-8 bg-[var(--color-surface)]">
-        <button className="px-6 py-2 rounded-md text-[var(--color-text-muted)] hover:bg-[var(--color-surface-hover)] font-medium text-sm transition-colors">
+        <button 
+          onClick={() => setPublishType('publish_now')}
+          className={`px-6 py-2 rounded-md font-medium text-sm transition-colors ${publishType === 'publish_now' ? 'bg-[var(--color-brand-light)] text-[var(--color-brand-dark)] shadow-sm' : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-hover)]'}`}
+        >
           Publish Now
         </button>
-        <button className="px-6 py-2 rounded-md bg-[var(--color-brand-light)] text-[var(--color-brand-dark)] font-medium text-sm shadow-sm">
+        <button 
+          onClick={() => setPublishType('schedule')}
+          className={`px-6 py-2 rounded-md font-medium text-sm transition-colors ${publishType === 'schedule' ? 'bg-[var(--color-brand-light)] text-[var(--color-brand-dark)] shadow-sm' : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-hover)]'}`}
+        >
           Schedule Publish
         </button>
       </div>
 
       {/* Date and Time Selection */}
-      <div className="mb-8">
-        <h4 className="text-sm font-semibold text-[var(--color-text-primary)] mb-4">Select Date and Time</h4>
-        <div className="grid grid-cols-2 gap-6">
-          <div className="relative">
-            <input type="date" className="w-full px-4 py-2.5 rounded-md border border-[var(--color-border-light)] text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]" />
-          </div>
-          <div className="relative">
-            <input type="time" className="w-full px-4 py-2.5 rounded-md border border-[var(--color-border-light)] text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]" />
-          </div>
-        </div>
-      </div>
-
-      {/* Live Until Selection */}
-      <div className="mb-10">
-        <h4 className="text-sm font-semibold text-[var(--color-text-primary)] mb-2">Live Until</h4>
-        <p className="text-sm text-[var(--color-text-secondary)] mb-6">Choose how long this test should remain available on the platform.</p>
-        
-        <div className="grid grid-cols-2 gap-y-6 gap-x-6">
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input type="radio" name="live_until" value="always" className="w-4 h-4 accent-[var(--color-brand-primary)] cursor-pointer" />
-            <span className="text-sm font-medium text-[var(--color-text-secondary)]">Always Available</span>
-          </label>
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input type="radio" name="live_until" value="3_weeks" className="w-4 h-4 accent-[var(--color-brand-primary)] cursor-pointer" />
-            <span className="text-sm font-medium text-[var(--color-text-secondary)]">3 Weeks</span>
-          </label>
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input type="radio" name="live_until" value="1_week" className="w-4 h-4 accent-[var(--color-brand-primary)] cursor-pointer" />
-            <span className="text-sm font-medium text-[var(--color-text-secondary)]">1 Week</span>
-          </label>
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input type="radio" name="live_until" value="1_month" className="w-4 h-4 accent-[var(--color-brand-primary)] cursor-pointer" />
-            <span className="text-sm font-medium text-[var(--color-text-secondary)]">1 Month</span>
-          </label>
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input type="radio" name="live_until" value="2_weeks" className="w-4 h-4 accent-[var(--color-brand-primary)] cursor-pointer" />
-            <span className="text-sm font-medium text-[var(--color-text-secondary)]">2 Weeks</span>
-          </label>
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input type="radio" name="live_until" value="custom" className="w-4 h-4 accent-[var(--color-brand-primary)] cursor-pointer" defaultChecked />
-            <span className="text-sm font-medium text-[var(--color-text-primary)]">Custom Duration</span>
-          </label>
-        </div>
-
-        {/* Custom Duration Date/Time */}
-        <div className="grid grid-cols-2 gap-6 mt-6">
-          <div className="relative">
-            <input type="date" className="w-full px-4 py-2.5 rounded-md border border-[var(--color-border-light)] text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]" />
-          </div>
-          <div className="relative">
-            <input type="time" className="w-full px-4 py-2.5 rounded-md border border-[var(--color-border-light)] text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]" />
+      {publishType === 'schedule' && (
+        <div className="mb-8">
+          <h4 className="text-sm font-semibold text-[var(--color-text-primary)] mb-4">Select Date and Time</h4>
+          <div className="grid grid-cols-2 gap-6">
+            <div className="relative">
+              <input 
+                type="date" 
+                value={scheduleDate}
+                onChange={(e) => setScheduleDate(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-md border border-[var(--color-border-light)] bg-transparent text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]" 
+              />
+            </div>
+            <div className="relative">
+              <input 
+                type="time" 
+                value={scheduleTime}
+                onChange={(e) => setScheduleTime(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-md border border-[var(--color-border-light)] bg-transparent text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]" 
+              />
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Footer Buttons */}
-      <div className="flex justify-end gap-4 border-t border-[var(--color-border-light)] pt-6 mt-6 pb-20">
-        <Link href="/create-test/questions">
-          <button className="px-8 py-2.5 rounded-md text-[var(--color-brand-dark)] bg-[var(--color-brand-light)] font-medium text-sm hover:bg-blue-100 transition-colors">
-            Cancel
+      <div className="flex justify-between border-t border-[var(--color-border-light)] pt-6 mt-6 pb-20">
+        <Link href={`/create-test/questions?testId=${testId}`}>
+          <button className="px-8 py-2.5 rounded-md text-[var(--color-text-primary)] bg-[var(--color-surface-hover)] border border-[var(--color-border-light)] font-medium text-sm hover:bg-[var(--color-border-light)] transition-colors">
+            Back
           </button>
         </Link>
-        <button className="px-10 py-2.5 rounded-md text-white bg-[#6b8cff] hover:bg-blue-600 font-medium text-sm transition-colors shadow-sm">
-          Confirm
+        <button 
+          onClick={handlePublish}
+          disabled={loading}
+          className="px-10 py-2.5 rounded-md text-white bg-[#6b8cff] hover:bg-blue-600 disabled:bg-blue-400 font-medium text-sm transition-colors shadow-sm"
+        >
+          {loading ? 'Publishing...' : 'Confirm'}
         </button>
       </div>
     </div>
   );
 }
-

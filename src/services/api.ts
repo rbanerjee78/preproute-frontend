@@ -10,8 +10,6 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://admin-moderator-bac
  * Generic fetch wrapper to handle JSON, headers, and errors
  */
 async function fetchAPI(endpoint: string, options: RequestInit = {}) {
-  // To enable real API calls, uncomment this block and remove the mock code below.
-  /*
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
@@ -29,16 +27,19 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}) {
 
   const data = await response.json();
 
-  if (!response.ok) {
-    throw new Error(data.message || 'An error occurred with the API request');
+  if (!response.ok || (data.success === false) || (data.status === 'error')) {
+    let errorMsg = data.message || 'An error occurred with the API request';
+    if (data.errors) {
+      errorMsg += ': ' + (typeof data.errors === 'string' ? data.errors : JSON.stringify(data.errors));
+    } else if (data.error && typeof data.error !== 'boolean') {
+      errorMsg += ': ' + (typeof data.error === 'string' ? data.error : JSON.stringify(data.error));
+    } else if (data.detail) {
+      errorMsg += ': ' + (typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail));
+    }
+    throw new Error(errorMsg);
   }
 
   return data;
-  */
-
-  // --- MOCK IMPLEMENTATION FOR UI DEVELOPMENT ---
-  console.log(`[Mock API] ${options.method || 'GET'} ${endpoint}`, options.body ? JSON.parse(options.body as string) : '');
-  return Promise.resolve({ success: true, data: {}, message: 'Mock API response' });
 }
 
 export const api = {
@@ -47,14 +48,10 @@ export const api = {
   // ==========================================
   auth: {
     login: async (credentials: { userId: string; password: string }) => {
-      // return fetchAPI('/auth/login', { method: 'POST', body: JSON.stringify(credentials) });
-      return Promise.resolve({
-        success: true,
-        data: { token: 'mock-jwt-token', user: { name: 'Alex Wando', role: 'admin' } }
-      });
+      return fetchAPI('/auth/login', { method: 'POST', body: JSON.stringify(credentials) });
     },
     logout: () => {
-      // if (typeof window !== 'undefined') localStorage.removeItem('token');
+      if (typeof window !== 'undefined') localStorage.removeItem('token');
       console.log('Logged out');
     }
   },
@@ -64,20 +61,16 @@ export const api = {
   // ==========================================
   taxonomy: {
     getSubjects: async () => {
-      // return fetchAPI('/subjects');
-      return Promise.resolve({ success: true, data: [{ id: 'sub-uuid', name: 'Mathematics' }] });
+      return fetchAPI('/subjects');
     },
     getTopicsBySubject: async (subjectId: string) => {
-      // return fetchAPI(`/topics/subject/${subjectId}`);
-      return Promise.resolve({ success: true, data: [{ id: 'top-uuid', name: 'Algebra', subject_id: subjectId }] });
+      return fetchAPI(`/topics/subject/${subjectId}`);
     },
     getSubTopicsByTopic: async (topicId: string) => {
-      // return fetchAPI(`/sub-topics/topic/${topicId}`);
-      return Promise.resolve({ success: true, data: [{ id: 'subtop-uuid', name: 'Linear Equations', topic_id: topicId }] });
+      return fetchAPI(`/sub-topics/topic/${topicId}`);
     },
     getSubTopicsByMultipleTopics: async (topicIds: string[]) => {
-      // return fetchAPI('/sub-topics/multi-topics', { method: 'POST', body: JSON.stringify({ topicIds }) });
-      return Promise.resolve({ success: true, data: [] });
+      return fetchAPI('/sub-topics/multi-topics', { method: 'POST', body: JSON.stringify({ topicIds }) });
     }
   },
 
@@ -86,12 +79,10 @@ export const api = {
   // ==========================================
   tests: {
     getAll: async () => {
-      // return fetchAPI('/tests');
-      return Promise.resolve({ success: true, data: [] });
+      return fetchAPI('/tests');
     },
     getById: async (id: string) => {
-      // return fetchAPI(`/tests/${id}`);
-      return Promise.resolve({ success: true, data: { id, name: 'Sample Test', subject: 'Mathematics' } });
+      return fetchAPI(`/tests/${id}`);
     },
     create: async (testData: {
       name: string;
@@ -108,21 +99,19 @@ export const api = {
       total_questions: number;
       status: string | null;
     }) => {
-      // return fetchAPI('/tests', { method: 'POST', body: JSON.stringify(testData) });
-      return Promise.resolve({ success: true, data: { id: 'new-test-uuid', ...testData }, message: "Test created successfully" });
+      return fetchAPI('/tests', { method: 'POST', body: JSON.stringify(testData) });
     },
-    update: async (id: string, updateData: {
-      name?: string;
-      questions?: string[];
-      total_questions?: number;
-      total_marks?: number;
-    }) => {
-      // return fetchAPI(`/tests/${id}`, { method: 'PUT', body: JSON.stringify(updateData) });
-      return Promise.resolve({ success: true, data: updateData });
+    update: async (id: string, updateData: any) => {
+      return fetchAPI(`/tests/${id}`, { method: 'PUT', body: JSON.stringify(updateData) });
     },
     publish: async (id: string) => {
-      // return fetchAPI(`/tests/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'live' }) });
-      return Promise.resolve({ success: true, message: "Test published successfully" });
+      return fetchAPI(`/tests/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'live' }) });
+    },
+    unpublish: async (id: string) => {
+      return fetchAPI(`/tests/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'unpublished' }) });
+    },
+    delete: async (id: string) => {
+      return fetchAPI(`/tests/${id}`, { method: 'DELETE' });
     }
   },
 
@@ -142,12 +131,11 @@ export const api = {
       difficulty?: string;
       test_id: string;
     }[]) => {
-      // return fetchAPI('/questions/bulk', { method: 'POST', body: JSON.stringify({ questions }) });
-      return Promise.resolve({ success: true, data: [{ id: 'q-uuid' }], message: `Successfully created ${questions.length} questions` });
+      return fetchAPI('/questions/bulk', { method: 'POST', body: JSON.stringify({ questions }) });
     },
     fetchBulk: async (questionIds: string[]) => {
-      // return fetchAPI('/questions/fetchBulk', { method: 'POST', body: JSON.stringify({ question_ids: questionIds }) });
-      return Promise.resolve({ success: true, data: [] });
+      return fetchAPI('/questions/fetchBulk', { method: 'POST', body: JSON.stringify({ question_ids: questionIds }) });
     }
   }
 };
+

@@ -1,10 +1,25 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Pencil, Clock, HelpCircle, FileText, Plus, Trash2, ChevronLeft, ChevronRight, Bold, Italic, Underline, List, ListOrdered, Link as LinkIcon, Image as ImageIcon, ChevronDown } from 'lucide-react';
+import { api } from '@/services/api';
 
 export default function AddQuestionsPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const testId = searchParams.get('testId');
+
+  // Test Details (Mock fetched from testId if real API supported it)
+  const [testDetails, setTestDetails] = useState<any>(null);
+
+  // Local state for all questions added so far
+  const [questionsList, setQuestionsList] = useState<any[]>([]);
+  const [currentQIndex, setCurrentQIndex] = useState(0);
+
+  // Current question form state
+  const [questionText, setQuestionText] = useState('');
   const [options, setOptions] = useState([
     { id: 1, text: '' },
     { id: 2, text: '' },
@@ -12,41 +27,158 @@ export default function AddQuestionsPage() {
     { id: 4, text: '' },
   ]);
   const [correctOptionId, setCorrectOptionId] = useState(1);
-  const [nextId, setNextId] = useState(5);
-  const [solutions, setSolutions] = useState([{ id: 1, text: '' }]);
-  const [nextSolutionId, setNextSolutionId] = useState(2);
+  const [solution, setSolution] = useState('');
+  const [difficulty, setDifficulty] = useState('medium');
+  
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleAddOption = () => {
-    setOptions([...options, { id: nextId, text: '' }]);
-    setNextId(nextId + 1);
-  };
-
-  const handleDeleteOption = (id: number) => {
-    setOptions(options.filter(opt => opt.id !== id));
-    if (correctOptionId === id) {
-      setCorrectOptionId(options.find(opt => opt.id !== id)?.id || 0);
+  // Fetch test details to display in header
+  useEffect(() => {
+    if (testId) {
+      api.tests.getById(testId).then(async res => {
+        const test = res.data || res;
+        setTestDetails(test);
+        
+        // Load existing questions
+        if (test.questions && test.questions.length > 0) {
+          try {
+            let qList = test.questions;
+            if (typeof test.questions[0] === 'string') {
+              const qRes = await api.questions.fetchBulk(test.questions);
+              qList = qRes.data || qRes;
+            }
+            setQuestionsList(qList);
+            
+            // Populate form with first question
+            if (qList.length > 0) {
+              const q = qList[0];
+              setQuestionText(q.question);
+              setOptions([
+                { id: 1, text: q.option1 },
+                { id: 2, text: q.option2 },
+                { id: 3, text: q.option3 },
+                { id: 4, text: q.option4 },
+              ]);
+              setCorrectOptionId(parseInt(q.correct_option.replace('option', '')) || 1);
+              setSolution(q.explanation || '');
+              setDifficulty(q.difficulty || 'medium');
+            }
+          } catch (e) {
+            console.error("Failed to fetch existing questions:", e);
+          }
+        }
+      }).catch(console.error);
     }
-  };
+  }, [testId]);
 
   const handleOptionChange = (id: number, text: string) => {
     setOptions(options.map(opt => opt.id === id ? { ...opt, text } : opt));
   };
 
-  const handleAddSolution = () => {
-    setSolutions([...solutions, { id: nextSolutionId, text: '' }]);
-    setNextSolutionId(nextSolutionId + 1);
+  const handleSaveCurrentQuestion = () => {
+    setError('');
+    if (!questionText.trim()) {
+      setError("Question text cannot be empty.");
+      return;
+    }
+    if (options.some(opt => !opt.text.trim())) {
+      setError("All 4 options must be filled.");
+      return;
+    }
+
+    const newQuestion = {
+      type: "mcq",
+      question: questionText,
+      option1: options[0].text,
+      option2: options[1].text,
+      option3: options[2].text,
+      option4: options[3].text,
+      correct_option: `option${correctOptionId}`,
+      explanation: solution,
+      difficulty,
+      test_id: testId as string,
+      subject: testDetails?.subject?.id || testDetails?.subject || '',
+      topic: testDetails?.topics?.[0]?.id || testDetails?.topics?.[0] || '',
+      sub_topic: testDetails?.sub_topics?.[0]?.id || testDetails?.sub_topics?.[0] || ''
+    };
+
+    const updatedList = [...questionsList];
+    if (currentQIndex < updatedList.length) {
+      updatedList[currentQIndex] = newQuestion;
+    } else {
+      updatedList.push(newQuestion);
+    }
+    
+    setQuestionsList(updatedList);
+    alert(`Question ${currentQIndex + 1} saved locally!`);
+    
+    // Auto-advance to next blank question if we are at the end
+    if (currentQIndex === updatedList.length - 1) {
+      setCurrentQIndex(updatedList.length);
+      setQuestionText('');
+      setOptions([
+        { id: 1, text: '' },
+        { id: 2, text: '' },
+        { id: 3, text: '' },
+        { id: 4, text: '' },
+      ]);
+      setCorrectOptionId(1);
+      setSolution('');
+    }
   };
 
-  const handleDeleteSolution = (id: number) => {
-    setSolutions(solutions.filter(sol => sol.id !== id));
+  const loadQuestionIntoForm = (index: number) => {
+    if (index >= 0 && index < questionsList.length) {
+      const q = questionsList[index];
+      setQuestionText(q.question);
+      setOptions([
+        { id: 1, text: q.option1 },
+        { id: 2, text: q.option2 },
+        { id: 3, text: q.option3 },
+        { id: 4, text: q.option4 },
+      ]);
+      setCorrectOptionId(parseInt(q.correct_option.replace('option', '')));
+      setSolution(q.explanation || '');
+      setDifficulty(q.difficulty || 'medium');
+    } else {
+      // Load blank
+      setQuestionText('');
+      setOptions([
+        { id: 1, text: '' },
+        { id: 2, text: '' },
+        { id: 3, text: '' },
+        { id: 4, text: '' },
+      ]);
+      setCorrectOptionId(1);
+      setSolution('');
+    }
+    setCurrentQIndex(index);
   };
 
-  const handleSolutionChange = (id: number, text: string) => {
-    setSolutions(solutions.map(sol => sol.id === id ? { ...sol, text } : sol));
+  const handleNextSubmit = async () => {
+    if (!testId) {
+      setError("No Test ID found. Cannot create questions.");
+      return;
+    }
+    if (questionsList.length === 0) {
+      setError("Please add and save at least one question before proceeding.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await api.questions.bulkCreate(questionsList);
+      router.push(`/create-test/schedule?testId=${testId}`);
+    } catch (err: any) {
+      setError(err.message || 'Failed to submit questions');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="p-8 max-w-5xl">
+    <div className="p-8 max-w-5xl mx-auto">
       {/* Header and Breadcrumbs */}
       <div className="flex justify-between items-start mb-8">
         <div className="flex items-center text-sm text-[var(--color-text-secondary)]">
@@ -54,11 +186,8 @@ export default function AddQuestionsPage() {
           <span className="mx-2">/</span>
           <span>Create Test</span>
           <span className="mx-2">/</span>
-          <span className="text-[var(--color-text-primary)] font-medium">Chapter Wise</span>
+          <span className="text-[var(--color-text-primary)] font-medium">Add Questions</span>
         </div>
-        <button className="px-6 py-2 rounded-md text-white bg-[var(--color-brand-secondary)] hover:bg-[var(--color-brand-primary)] font-medium text-sm transition-colors shadow-sm">
-          Publish
-        </button>
       </div>
 
       {/* Test Summary Card */}
@@ -74,76 +203,60 @@ export default function AddQuestionsPage() {
         
         <div className="flex items-center gap-4 mb-6">
           <div className="w-8 h-8 bg-orange-100 rounded flex items-center justify-center text-orange-500 font-bold text-lg">P</div>
-          <h2 className="text-xl font-bold text-[var(--color-text-primary)]">Chapter 1</h2>
-          <span className="bg-teal-100 text-teal-700 text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1">
-            <div className="w-2 h-2 bg-teal-500 rounded-full"></div> Easy
+          <h2 className="text-xl font-bold text-[var(--color-text-primary)]">{testDetails?.name || 'Untitled Test'}</h2>
+          <span className={`text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1 ${
+             testDetails?.difficulty === 'easy' ? 'bg-teal-100 text-teal-700' : 
+             testDetails?.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'
+          }`}>
+            <div className={`w-2 h-2 rounded-full ${
+              testDetails?.difficulty === 'easy' ? 'bg-teal-500' : 
+              testDetails?.difficulty === 'medium' ? 'bg-yellow-500' : 'bg-red-500'
+            }`}></div> {testDetails?.difficulty || 'N/A'}
           </span>
         </div>
 
         <div className="grid grid-cols-2 gap-y-3 text-sm">
           <div className="flex">
             <span className="text-[var(--color-text-secondary)] w-24">Subject</span>
-            <span className="text-[var(--color-text-primary)] font-medium">: English</span>
+            <span className="text-[var(--color-text-primary)] font-medium">: {testDetails?.subject || 'Unknown'}</span>
           </div>
           <div className="row-span-3 flex flex-col justify-end items-end gap-3 pb-1">
             <div className="flex items-center gap-4 text-[var(--color-text-secondary)] text-sm">
-              <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" /> 60 Min</span>
-              <span className="flex items-center gap-1.5"><HelpCircle className="w-4 h-4" /> 50 Q's</span>
-              <span className="flex items-center gap-1.5"><FileText className="w-4 h-4" /> 250 Marks</span>
+              <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" /> {testDetails?.total_time || 0} Min</span>
+              <span className="flex items-center gap-1.5"><HelpCircle className="w-4 h-4" /> {testDetails?.total_questions || 0} Q's</span>
+              <span className="flex items-center gap-1.5"><FileText className="w-4 h-4" /> {testDetails?.total_marks || 0} Marks</span>
             </div>
           </div>
-          <div className="flex items-center">
-            <span className="text-[var(--color-text-secondary)] w-24">Topic</span>
-            <span className="flex items-center gap-2">
-              <span className="text-yellow-600 border border-yellow-200 bg-yellow-50 px-2 py-0.5 rounded text-xs">: Grammar</span>
-              <span className="text-yellow-600 border border-yellow-200 bg-yellow-50 px-2 py-0.5 rounded text-xs">Writing</span>
-            </span>
-          </div>
-          <div className="flex items-center">
-            <span className="text-[var(--color-text-secondary)] w-24">Sub Topic</span>
-            <span className="flex items-center gap-2">
-              <span className="text-yellow-600 border border-yellow-200 bg-yellow-50 px-2 py-0.5 rounded text-xs">: Application</span>
-            </span>
-          </div>
         </div>
       </div>
 
-      {/* Question Editor */}
-      <div className="mb-6 flex justify-between items-center">
-        <h3 className="font-semibold text-[var(--color-text-primary)]">Question 4<span className="text-[var(--color-brand-secondary)] font-normal">/50</span></h3>
-        <div className="flex gap-2">
-          <button className="flex items-center gap-1.5 px-3 py-1.5 border border-[var(--color-border-light)] rounded text-xs font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)]">
-            <Plus className="w-3.5 h-3.5" /> MCQ
-          </button>
-          <button className="flex items-center gap-1.5 px-3 py-1.5 border border-[var(--color-border-light)] rounded text-xs font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)]">
-            <Plus className="w-3.5 h-3.5" /> CSV
-          </button>
-        </div>
+      {error && <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-md border border-red-200">{error}</div>}
+
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-bold text-[var(--color-text-primary)]">Question {currentQIndex + 1}</h3>
+        <span className="text-sm text-[var(--color-text-secondary)]">Total Saved: {questionsList.length}</span>
       </div>
 
-      <button className="flex items-center gap-1.5 text-red-500 hover:text-red-600 text-xs font-medium mb-4">
-        <Trash2 className="w-3.5 h-3.5" /> Delete All Edits
-      </button>
-
-      {/* Rich Text Editor Placeholder */}
-      <div className="border border-[var(--color-border-light)] rounded-md mb-8 overflow-hidden bg-[var(--color-surface)]">
+      {/* Editor */}
+      <div className="border border-[var(--color-border-light)] rounded-lg overflow-hidden mb-8 bg-[var(--color-surface)]">
         <div className="flex items-center gap-3 p-2 border-b border-[var(--color-border-light)] bg-[var(--color-surface-hover)] text-[var(--color-text-muted)]">
-          <Bold className="w-4 h-4 cursor-pointer hover:text-gray-700" />
-          <Italic className="w-4 h-4 cursor-pointer hover:text-gray-700" />
-          <Underline className="w-4 h-4 cursor-pointer hover:text-gray-700" />
+          <Bold className="w-4 h-4 cursor-pointer hover:text-[var(--color-text-primary)]" />
+          <Italic className="w-4 h-4 cursor-pointer hover:text-[var(--color-text-primary)]" />
+          <Underline className="w-4 h-4 cursor-pointer hover:text-[var(--color-text-primary)]" />
           <div className="w-px h-4 bg-gray-300 mx-1"></div>
-          <LinkIcon className="w-4 h-4 cursor-pointer hover:text-gray-700" />
+          <LinkIcon className="w-4 h-4 cursor-pointer hover:text-[var(--color-text-primary)]" />
           <div className="w-px h-4 bg-gray-300 mx-1"></div>
-          <List className="w-4 h-4 cursor-pointer hover:text-gray-700" />
-          <ListOrdered className="w-4 h-4 cursor-pointer hover:text-gray-700" />
-          <ImageIcon className="w-4 h-4 cursor-pointer hover:text-gray-700" />
+          <List className="w-4 h-4 cursor-pointer hover:text-[var(--color-text-primary)]" />
+          <ListOrdered className="w-4 h-4 cursor-pointer hover:text-[var(--color-text-primary)]" />
+          <ImageIcon className="w-4 h-4 cursor-pointer hover:text-[var(--color-text-primary)]" />
         </div>
         <div className="relative">
           <textarea 
-            className="w-full h-32 p-4 text-sm focus:outline-none resize-none placeholder-gray-300"
-            placeholder="Type here"
+            value={questionText}
+            onChange={(e) => setQuestionText(e.target.value)}
+            className="w-full h-32 p-4 text-sm focus:outline-none resize-none placeholder-gray-400 bg-transparent text-[var(--color-text-primary)]"
+            placeholder="Type question here"
           ></textarea>
-          <Trash2 className="absolute right-4 top-4 w-4 h-4 text-gray-300 cursor-pointer hover:text-red-500" />
         </div>
       </div>
 
@@ -166,117 +279,69 @@ export default function AddQuestionsPage() {
               <div className="flex-1 relative border border-[var(--color-border-light)] rounded-md overflow-hidden bg-[var(--color-surface)]">
                 <input 
                   type="text" 
-                  placeholder="Type Option here" 
+                  placeholder={`Option ${opt.id}`} 
                   value={opt.text}
                   onChange={(e) => handleOptionChange(opt.id, e.target.value)}
-                  className="w-full py-2.5 px-4 text-sm focus:outline-none placeholder-gray-300" 
-                />
-                <Trash2 
-                  onClick={() => handleDeleteOption(opt.id)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 cursor-pointer hover:text-red-500" 
+                  className="w-full py-2.5 px-4 text-sm focus:outline-none placeholder-gray-400 bg-transparent text-[var(--color-text-primary)]" 
                 />
               </div>
             </div>
           ))}
         </div>
-        <button 
-          onClick={handleAddOption}
-          className="flex items-center gap-1.5 text-sm font-medium text-[var(--color-brand-primary)] hover:text-blue-700"
-        >
-          <Plus className="w-4 h-4" /> Add Option
-        </button>
+        <p className="text-xs text-[var(--color-text-secondary)] italic">Select the radio button next to the correct option.</p>
       </div>
 
       {/* Solution */}
       <div className="mb-8">
-        <h4 className="text-sm font-semibold text-[var(--color-text-primary)] mb-4">Add Solution</h4>
+        <h4 className="text-sm font-semibold text-[var(--color-text-primary)] mb-4">Add Solution (Optional)</h4>
         <div className="space-y-4 mb-4">
-          {solutions.map((sol) => (
-            <div key={sol.id} className="relative border border-[var(--color-border-light)] rounded-md overflow-hidden bg-[var(--color-surface)]">
-              <textarea 
-                value={sol.text}
-                onChange={(e) => handleSolutionChange(sol.id, e.target.value)}
-                className="w-full h-24 p-4 text-sm focus:outline-none resize-none placeholder-gray-300"
-                placeholder="Type here"
-              ></textarea>
-              <Trash2 
-                onClick={() => handleDeleteSolution(sol.id)}
-                className="absolute right-4 top-4 w-4 h-4 text-gray-300 cursor-pointer hover:text-red-500" 
-              />
-            </div>
-          ))}
+          <div className="relative border border-[var(--color-border-light)] rounded-md overflow-hidden bg-[var(--color-surface)]">
+            <textarea 
+              value={solution}
+              onChange={(e) => setSolution(e.target.value)}
+              className="w-full h-24 p-4 text-sm focus:outline-none resize-none placeholder-gray-400 bg-transparent text-[var(--color-text-primary)]"
+              placeholder="Type explanation here"
+            ></textarea>
+          </div>
         </div>
-        <button 
-          onClick={handleAddSolution}
-          className="flex items-center gap-1.5 text-sm font-medium text-[var(--color-brand-primary)] hover:text-blue-700"
-        >
-          <Plus className="w-4 h-4" /> Add More Solution
+      </div>
+
+      {/* Pagination Controls & Save */}
+      <div className="flex justify-between items-center mb-8">
+        <div className="flex items-center gap-6 text-[var(--color-text-muted)]">
+          <button 
+            disabled={currentQIndex === 0} 
+            onClick={() => loadQuestionIntoForm(currentQIndex - 1)}
+            className="flex items-center gap-1 hover:text-[var(--color-text-primary)] disabled:opacity-50"
+          >
+            <ChevronLeft className="w-5 h-5" /> Previous
+          </button>
+          <span className="font-medium text-sm">{currentQIndex + 1}</span>
+          <button 
+            disabled={currentQIndex >= questionsList.length} 
+            onClick={() => loadQuestionIntoForm(currentQIndex + 1)}
+            className="flex items-center gap-1 hover:text-[var(--color-text-primary)] disabled:opacity-50"
+          >
+            Next <ChevronRight className="w-5 h-5" />
+          </button>
+        </div>
+        
+        <button onClick={handleSaveCurrentQuestion} className="px-6 py-2 bg-[var(--color-brand-light)] text-[var(--color-brand-dark)] text-sm font-medium rounded-md hover:bg-blue-100 transition-colors">
+          Save Question
         </button>
-      </div>
-
-      {/* Pagination Controls */}
-      <div className="flex justify-center items-center gap-8 mb-8 text-[var(--color-text-muted)]">
-        <ChevronLeft className="w-5 h-5 cursor-pointer hover:text-gray-700" />
-        <ChevronRight className="w-5 h-5 cursor-pointer hover:text-gray-700" />
-      </div>
-
-      {/* Question Settings */}
-      <div className="mb-10">
-        <h4 className="text-sm font-semibold text-[var(--color-text-primary)] mb-4">Question settings</h4>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--color-text-secondary)]">Level of Difficulty</label>
-            <div className="relative">
-              <select className="w-full appearance-none px-4 py-2.5 rounded-md border border-[var(--color-border-light)] text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]">
-                <option value="">Select from Drop-down</option>
-                <option value="easy">Easy</option>
-                <option value="medium">Medium</option>
-                <option value="hard">Hard</option>
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--color-text-secondary)]">Topic</label>
-            <div className="relative">
-              <select className="w-full appearance-none px-4 py-2.5 rounded-md border border-[var(--color-border-light)] text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]">
-                <option value="">Select from Drop-down</option>
-                <option value="grammar">Grammar</option>
-                <option value="vocabulary">Vocabulary</option>
-                <option value="reading">Reading Comprehension</option>
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--color-text-secondary)]">Sub-topic</label>
-            <div className="relative">
-              <select className="w-full appearance-none px-4 py-2.5 rounded-md border border-[var(--color-border-light)] text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]">
-                <option value="">Select from Drop-down</option>
-                <option value="nouns">Nouns & Pronouns</option>
-                <option value="verbs">Verbs & Tenses</option>
-                <option value="adjectives">Adjectives & Adverbs</option>
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Footer Buttons */}
       <div className="flex justify-between border-t border-[var(--color-border-light)] pt-6 mt-6 pb-20">
         <Link href="/create-test">
-          <button className="px-6 py-2.5 rounded-md text-white bg-red-400 hover:bg-red-500 font-medium text-sm transition-colors shadow-sm">
-            Exit Test Creation
+          <button className="px-6 py-2.5 rounded-md text-[var(--color-text-primary)] bg-[var(--color-surface-hover)] border border-[var(--color-border-light)] font-medium text-sm transition-colors hover:bg-[var(--color-border-light)]">
+            Back
           </button>
         </Link>
-        <Link href="/create-test/schedule">
-          <button className="px-10 py-2.5 rounded-md text-white bg-[var(--color-brand-secondary)] hover:bg-[var(--color-brand-primary)] font-medium text-sm transition-colors shadow-sm">
-            Next
-          </button>
-        </Link>
+        <button onClick={handleNextSubmit} disabled={loading} className="px-10 py-2.5 rounded-md text-white bg-[#6b8cff] hover:bg-blue-600 disabled:bg-blue-400 font-medium text-sm transition-colors shadow-sm">
+          {loading ? 'Submitting...' : 'Submit & Next'}
+        </button>
       </div>
     </div>
   );
 }
-

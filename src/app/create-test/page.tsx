@@ -114,12 +114,11 @@ export default function CreateTestPage() {
     
     setLoading(true);
     try {
-      const payload = {
+      const payload: any = {
         name,
         type,
         subject: subject,
         topics: topic ? [topic] : [],
-        sub_topics: subtopic ? [subtopic] : [],
         correct_marks: correctMarks,
         wrong_marks: wrongMarks,
         unattempt_marks: unattemptMarks,
@@ -129,6 +128,10 @@ export default function CreateTestPage() {
         total_marks: totalMarks,
         status: "draft"
       };
+
+      if (subtopic) {
+        payload.sub_topics = [subtopic];
+      }
       
       let res;
       if (isEditing && testId) {

@@ -11,9 +11,9 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://admin-moderator-bac
  */
 async function fetchAPI(endpoint: string, options: RequestInit = {}) {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...options.headers,
+    ...(options.headers as Record<string, string> || {}),
   };
   
   if (token) {
@@ -104,8 +104,12 @@ export const api = {
     update: async (id: string, updateData: any) => {
       return fetchAPI(`/tests/${id}`, { method: 'PUT', body: JSON.stringify(updateData) });
     },
-    publish: async (id: string) => {
-      return fetchAPI(`/tests/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'live' }) });
+    publish: async (id: string, scheduledDate?: string) => {
+      const payload: any = { status: scheduledDate ? 'scheduled' : 'live' };
+      if (scheduledDate) {
+        payload.scheduled_at = scheduledDate;
+      }
+      return fetchAPI(`/tests/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
     },
     unpublish: async (id: string) => {
       return fetchAPI(`/tests/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'unpublished' }) });

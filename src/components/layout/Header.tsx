@@ -51,11 +51,11 @@ export const Header = ({ onMenuClick }: { onMenuClick?: () => void }) => {
           {isNotifOpen && (
             <div className="absolute right-0 mt-2 w-72 bg-[var(--color-bg-main)] border border-[var(--color-border-light)] rounded-lg shadow-xl z-50 py-2">
               <div className="px-4 py-2 border-b border-[var(--color-border-light)] font-bold text-sm text-[var(--color-text-primary)]">Notifications</div>
-              <div className="px-4 py-3 text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] dark:hover:bg-gray-800 cursor-pointer border-b border-[var(--color-border-light)]">
+              <div className="px-4 py-3 text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] cursor-pointer border-b border-[var(--color-border-light)]">
                 <span className="font-semibold text-[var(--color-text-primary)]">System</span><br/>
                 Your test "Chapter 1" has been successfully created.
               </div>
-              <div className="px-4 py-3 text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] dark:hover:bg-gray-800 cursor-pointer">
+              <div className="px-4 py-3 text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] cursor-pointer">
                 <span className="font-semibold text-[var(--color-text-primary)]">Alex</span><br/>
                 Please review the marking scheme.
               </div>
@@ -89,17 +89,17 @@ export const Header = ({ onMenuClick }: { onMenuClick?: () => void }) => {
           
           {isProfileOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-[var(--color-bg-main)] border border-[var(--color-border-light)] rounded-lg shadow-xl z-50 py-1">
-              <div className="px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)] dark:hover:bg-gray-800 cursor-pointer transition-colors">My Profile</div>
-              <div className="px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)] dark:hover:bg-gray-800 cursor-pointer transition-colors">Account Settings</div>
+              <div className="px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)] cursor-pointer transition-colors">My Profile</div>
+              <div className="px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)] cursor-pointer transition-colors">Account Settings</div>
               <div 
                 onClick={(e) => { e.stopPropagation(); toggleDarkMode(); }}
-                className="px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)] dark:hover:bg-gray-800 cursor-pointer transition-colors flex items-center justify-between"
+                className="px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)] cursor-pointer transition-colors flex items-center justify-between"
               >
                 <span>Dark Theme</span>
                 {isDarkMode ? <Moon className="w-4 h-4 text-blue-400" /> : <Sun className="w-4 h-4 text-gray-500" />}
               </div>
               <div className="border-t border-[var(--color-border-light)] my-1"></div>
-              <div className="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 cursor-pointer transition-colors">Sign Out</div>
+              <div className="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 cursor-pointer transition-colors">Sign Out</div>
             </div>
           )}
         </div>
@@ -107,4 +107,5 @@ export const Header = ({ onMenuClick }: { onMenuClick?: () => void }) => {
     </header>
   );
 };
+
 
